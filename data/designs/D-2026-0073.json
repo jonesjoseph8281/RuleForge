@@ -1,0 +1,107 @@
+{
+  "design_id": "D-2026-0073",
+  "project": "Project 73",
+  "schema_version": "1.0",
+  "units": {
+    "length": "mm",
+    "flow": "L/s",
+    "velocity": "m/s"
+  },
+  "rooms": [],
+  "elements": [
+    {
+      "id": "81fed4f8-d1b2-49e4-af00-9c02a7202823",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 139,
+      "velocity_ms": 8,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "71cf4390-e784-4dcc-8eb4-6cc33200b1c2",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 120,
+      "velocity_ms": 7,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1"
+    },
+    {
+      "id": "7272a90b-8bb5-48f6-8a90-661cbbf0017e",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 123,
+      "velocity_ms": 5,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "d5a27ba3-5b2e-4990-b08c-1f3f74db15d1",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 137,
+      "velocity_ms": 6,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "086f398a-41f0-4d2e-8b37-37db7539c29a",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 142,
+      "velocity_ms": 10,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1",
+      "spec_note": "Approved waiver for reduced clearance with access panel provided."
+    },
+    {
+      "id": "9728c94d-2fdf-4f4c-be78-7ad771a3ffd9",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 179,
+      "velocity_ms": 6,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1"
+    },
+    {
+      "id": "9a7f7adb-43dc-4fd7-a7f4-e292bb01461b",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 188,
+      "velocity_ms": 7,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "df8b8bd0-7c95-476a-ae94-828f8323c903",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 121,
+      "velocity_ms": 5,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "271638fb-41a9-4144-8522-9ab6a10fafff",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 191,
+      "velocity_ms": 11,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "db9e2a57-880b-46ed-9374-23e9de294c2e",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 186,
+      "velocity_ms": 10,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "design_id": "D-2026-0087",
+  "project": "Project 87",
+  "schema_version": "1.0",
+  "units": {
+    "length": "mm",
+    "flow": "L/s",
+    "velocity": "m/s"
+  },
+  "rooms": [],
+  "elements": [
+    {
+      "id": "6c763dfb-61fc-4beb-ae34-85b40a7076c7",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 193,
+      "velocity_ms": 7,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1",
+      "spec_note": "Approved waiver for reduced clearance with access panel provided."
+    },
+    {
+      "id": "f09b3610-e798-4c14-a5e6-63be321cfdfb",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 141,
+      "velocity_ms": 6,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "37b8cbcb-df69-45ef-adbf-1e24d7a21208",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 198,
+      "velocity_ms": 7,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "0d46928c-e29f-4f07-9c36-fd63861caab0",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 114,
+      "velocity_ms": 6,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": null
+    },
+    {
+      "id": "21dfafc6-9080-4d50-b0f5-33623717157f",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 104,
+      "velocity_ms": 8,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1"
+    },
+    {
+      "id": "338b6afb-8392-453d-85cc-643876dad97b",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 184,
+      "velocity_ms": 12,
+      "service": "supply_air",
+      "crosses_fire_wall": false,
+      "spec_note": "Approved waiver for reduced clearance with access panel provided."
+    },
+    {
+      "id": "b723d31e-c779-480d-94cb-dc4164d67b60",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 177,
+      "velocity_ms": 6,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1",
+      "spec_note": "Approved waiver for reduced clearance with access panel provided."
+    },
+    {
+      "id": "fe770db2-a256-4df5-a77b-0ac1240f8974",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 110,
+      "velocity_ms": 12,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1"
+    },
+    {
+      "id": "8a33d34a-156e-42f8-b193-f165a8f0e811",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 147,
+      "velocity_ms": 5,
+      "service": "supply_air",
+      "crosses_fire_wall": false
+    },
+    {
+      "id": "9215d7fa-cc58-40a5-9bf3-690d12ebdbc6",
+      "type": "duct",
+      "level": "L1",
+      "clearance_to_ceiling_mm": 138,
+      "velocity_ms": 6,
+      "service": "supply_air",
+      "crosses_fire_wall": true,
+      "damper_id": "DMP-1"
+    }
+  ]
+}

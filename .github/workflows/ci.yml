@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: ankane/pgvector:v0.5.1
+        env:
+          POSTGRES_USER: ruleforge
+          POSTGRES_PASSWORD: ruleforge
+          POSTGRES_DB: ruleforge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[dev]
+    - name: Run lint
+      run: ruff check .
+    - name: Run mypy
+      run: mypy app/
+    - name: Run pytest
+      run: pytest tests/ -v --cov=app
+      env:
+        DATABASE_URL: postgresql://ruleforge:ruleforge@localhost:5432/ruleforge
+        REDIS_URL: redis://localhost:6379/0

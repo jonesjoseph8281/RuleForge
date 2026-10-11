@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuleForge - Human-in-the-Loop Review Queue</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#090d16',
+                            card: '#111726',
+                            border: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #090d16; color: #f1f5f9; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <nav class="border-b border-dark-border bg-dark-card/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand -->
+                <div class="flex items-center gap-3">
+                    <a href="/" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </a>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <a href="/" class="text-xl font-bold tracking-tight text-white hover:text-indigo-300 transition">Rule<span class="text-indigo-400">Forge</span></a>
+                            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">Review Queue</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-none">Human-in-the-Loop Review & Feedback Ingestion</p>
+                    </div>
+                </div>
+
+                <!-- Nav Links -->
+                <div class="flex items-center gap-2">
+                    <a href="/" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">Dashboard</a>
+                    <a href="/queue" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 transition flex items-center gap-2">
+                        Review Queue
+                        <span id="queue-badge-count" class="px-2 py-0.5 text-xs font-mono rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">{{ pending_count }}</span>
+                    </a>
+                    <a href="/rules" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">Codified Rules</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+        <!-- Header / Stat Banner -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-dark-card border border-dark-border rounded-2xl p-6">
+            <div>
+                <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+                    MEP Engineering Review Queue
+                </h1>
+                <p class="text-xs text-slate-400 mt-1">
+                    Items flagged due to ambiguous architectural waivers, low model confidence (&lt; 0.90), or high override risk.
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="px-4 py-2 rounded-xl bg-slate-900 border border-dark-border text-center">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Pending Review</div>
+                    <div class="text-xl font-bold font-mono text-amber-400" id="stat-pending">{{ pending_count }}</div>
+                </div>
+                <div class="px-4 py-2 rounded-xl bg-slate-900 border border-dark-border text-center">
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Approved / Reviewed</div>
+                    <div class="text-xl font-bold font-mono text-emerald-400" id="stat-reviewed">{{ reviewed_count }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 border border-dark-border rounded-xl p-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">Filter Client:</span>
+                <button onclick="filterQueue('all')" class="filter-btn active px-3 py-1 rounded-lg bg-indigo-600 text-white font-semibold transition" data-filter="all">All</button>
+                <button onclick="filterQueue('client_A')" class="filter-btn px-3 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition" data-filter="client_A">Apex (Client A)</button>
+                <button onclick="filterQueue('client_B')" class="filter-btn px-3 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition" data-filter="client_B">Beacon (Client B)</button>
+            </div>
+            <div class="text-slate-400 text-xs">
+                Showing <strong class="text-white" id="visible-count">{{ items|length }}</strong> flagged elements
+            </div>
+        </div>
+
+        <!-- Queue Cards Grid -->
+        <div class="space-y-4" id="queue-cards-list">
+            {% for item in items %}
+            <div class="queue-item bg-dark-card border border-dark-border rounded-2xl p-6 transition duration-200 hover:border-slate-700" 
+                 data-client="{{ item.client }}" 
+                 id="card-{{ item.id }}">
+                
+                <!-- Card Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-800/80">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold font-mono text-xs flex items-center justify-center uppercase">
+                            {{ item.type[:2] }}
+                        </span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-white text-sm uppercase">{{ item.type }} Element</span>
+                                <span class="font-mono text-xs text-slate-400">#{{ item.id[:8] }}...</span>
+                                <span class="text-[11px] px-2 py-0.5 rounded-full font-medium {% if item.client == 'client_A' %}bg-purple-500/10 text-purple-300 border border-purple-500/20{% else %}bg-blue-500/10 text-blue-300 border border-blue-500/20{% endif %}">
+                                    {{ item.client_name }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-slate-400">Blueprint: <strong class="text-slate-200">{{ item.design_id }}</strong> &bull; Level {{ item.level }} &bull; {{ item.project }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Right status pills -->
+                    <div class="flex items-center gap-2 font-mono text-xs">
+                        <div class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                            Confidence: <strong class="text-cyan-400">{{ (item.confidence * 100)|round }}%</strong>
+                        </div>
+                        <div class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                            Override Risk: <strong class="text-amber-400">{{ item.override_risk }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body: Measurements & Spec Note -->
+                <div class="py-4 grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Physical Measurements -->
+                    <div class="md:col-span-4 bg-slate-900/50 rounded-xl p-3 border border-dark-border text-xs space-y-1.5 font-mono">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block font-sans mb-1">Physical Metrics</span>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Clearance:</span>
+                            <span class="font-bold {% if item.clearance_mm and item.clearance_mm < 150 %}text-rose-400{% else %}text-emerald-400{% endif %}">
+                                {{ item.clearance_mm }} mm
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Air Velocity:</span>
+                            <span class="text-slate-200">{{ item.velocity_ms }} m/s</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Firewall Cross:</span>
+                            <span class="text-slate-200">{{ 'Yes' if item.crosses_fire_wall else 'No' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Damper ID:</span>
+                            <span class="text-slate-200">{{ item.damper_id if item.damper_id else 'Missing' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Waiver / Note & AI Analysis -->
+                    <div class="md:col-span-8 flex flex-col justify-between">
+                        <div class="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3.5 mb-2">
+                            <div class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                                Architectural Spec Note / Waiver Citation
+                            </div>
+                            <p class="text-xs text-slate-200 leading-relaxed font-sans">
+                                "{{ item.spec_note }}"
+                            </p>
+                        </div>
+                        
+                        <div class="text-[11px] text-slate-400 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                            <span><strong>AI Agent Reasoning:</strong> {{ item.llm_reasoning }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer / Action Buttons -->
+                <div class="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3" id="actions-{{ item.id }}">
+                    <div class="text-xs text-slate-400 font-mono">
+                        Pipeline: {{ item.trace | join(' &rarr; ') }}
+                    </div>
+
+                    {% if item.status == 'reviewed' %}
+                    <div class="px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Reviewed: {{ item.decision }}
+                    </div>
+                    {% else %}
+                    <div class="flex items-center gap-2">
+                        <button onclick="submitReviewAction('{{ item.id }}', 'APPROVED')" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Approve Exception (PASS)
+                        </button>
+                        <button onclick="submitReviewAction('{{ item.id }}', 'REJECTED')" class="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/20 transition flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Reject & Flag Defect (FAIL)
+                        </button>
+                        <button onclick="submitReviewAction('{{ item.id }}', 'SURVEY_REQUESTED')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition">
+                            Request Site Survey
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-dark-border bg-dark-card/50 py-6 text-center text-xs text-slate-500 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>RuleForge Human-in-the-Loop Feedback Loop Active</span>
+            </div>
+            <div class="text-slate-400 text-[11px]">Decisions logged to train continuous learning override predictors</div>
+        </div>
+    </footer>
+
+    <!-- Script for Review Actions -->
+    <script>
+        async function submitReviewAction(elementId, action) {
+            const actionsDiv = document.getElementById(`actions-${elementId}`);
+            try {
+                const res = await fetch("/api/web/review-action", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ element_id: elementId, action: action })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    const badgeColor = action === 'APPROVED' ? 'emerald' : (action === 'REJECTED' ? 'rose' : 'amber');
+                    actionsDiv.innerHTML = `
+                        <div class="text-xs text-slate-400 font-mono">Feedback ingested into model retraining loop.</div>
+                        <div class="px-4 py-1.5 rounded-xl bg-${badgeColor}-500/10 border border-${badgeColor}-500/30 text-${badgeColor}-400 font-bold text-xs flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Signed off as: ${action}
+                        </div>
+                    `;
+
+                    // Update stat counts
+                    const pendingEl = document.getElementById("stat-pending");
+                    const reviewedEl = document.getElementById("stat-reviewed");
+                    const badgeCount = document.getElementById("queue-badge-count");
+
+                    let pendingVal = parseInt(pendingEl.innerText) || 1;
+                    let reviewedVal = parseInt(reviewedEl.innerText) || 0;
+
+                    pendingVal = Math.max(0, pendingVal - 1);
+                    reviewedVal += 1;
+
+                    pendingEl.innerText = pendingVal;
+                    reviewedEl.innerText = reviewedVal;
+                    badgeCount.innerText = pendingVal;
+                }
+            } catch (err) {
+                alert("Failed to submit review action: " + err.message);
+            }
+        }
+
+        function filterQueue(clientFilter) {
+            document.querySelectorAll(".filter-btn").forEach(b => {
+                b.classList.remove("bg-indigo-600", "text-white");
+                b.classList.add("bg-slate-800", "text-slate-300");
+            });
+
+            const activeBtn = document.querySelector(`.filter-btn[data-filter="${clientFilter}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove("bg-slate-800", "text-slate-300");
+                activeBtn.classList.add("bg-indigo-600", "text-white");
+            }
+
+            let visible = 0;
+            document.querySelectorAll(".queue-item").forEach(card => {
+                const c = card.getAttribute("data-client");
+                if (clientFilter === 'all' || c === clientFilter) {
+                    card.style.display = "block";
+                    visible++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+            document.getElementById("visible-count").innerText = visible;
+        }
+    </script>
+</body>
+</html>

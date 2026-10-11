@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://ruleforge:ruleforge@postgres:5432/ruleforge
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=dev-secret-change-in-prod
+    volumes:
+      - ./app:/app/app
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://ruleforge:ruleforge@postgres:5432/ruleforge
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    command: ["celery", "-A", "app.tasks.celery_app", "beat", "--loglevel=info"]
+    environment:
+      - DATABASE_URL=postgresql://ruleforge:ruleforge@postgres:5432/ruleforge
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    environment:
+      - POSTGRES_USER=ruleforge
+      - POSTGRES_PASSWORD=ruleforge
+      - POSTGRES_DB=ruleforge
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ruleforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
